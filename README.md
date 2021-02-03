@@ -29,19 +29,11 @@ of the TagLib library when building.
 
 ### Using TagLib-Rust
 
-If you're using [cargo][crates] to manage your project, you can download
-through Crates.io:
-
-```toml
-[dependencies]
-taglib = "*"
-```
-
-Alternatively, you can pull it from [GitHub][taglib-gh]:
+Pull it from [GitHub][taglib-gh]:
 
 ```rust
 [dependencies]
-taglib = { git = "https://github.com/ebassi/taglib-rust" }
+taglib = { git = "https://github.com/andicoder/taglib-rust" }
 ```
 
 Otherwise, clone [the Git repository][taglib-gh], and run [cargo][crates]:
@@ -55,9 +47,10 @@ $ cargo build
 TagLib-Rust comes with some examples on how to use it, see the `examples`
 directory in the [the Git repository][taglib-gh].
 
-### Documentation
+### Why this fork?
 
-The API reference for TagLib-Rust is available [online][taglib-docs].
+This fork was made to add support for ID3v2 tags. At the moment there is 
+only one method implemented to add a picture to mpeg (mp3) files.
 
 ## License
 

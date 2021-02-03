@@ -69,6 +69,12 @@ pub struct AudioProperties<'a> {
     file: &'a File,
 }
 
+#[allow(dead_code)]
+pub struct TagId3v2<'a> {
+    raw: *mut ll::TagLib_TagId3v2,
+    file: &'a File,
+}
+
 impl<'a> Tag<'a> {
     /// Returns the track name, if any.
     pub fn title(&self) -> Option<String> {
@@ -170,6 +176,14 @@ impl<'a> Tag<'a> {
     }
 }
 
+impl<'a> TagId3v2<'a> {
+    pub fn add_picture(&mut self, frame_type: FrameType, buffer: &[u8]) -> bool {
+        unsafe {
+            return ll::taglib_id3v2_add_picture(self.raw, frame_type as u32, buffer.as_ptr(), buffer.len());
+        }
+    }
+}
+
 impl<'a> AudioProperties<'a> {
     /// Returns the length, in seconds, of the track.
     pub fn length(&self) -> u32 {
@@ -231,6 +245,31 @@ pub enum FileError {
     NoAvailableAudioProperties,
 }
 
+#[derive(Copy, Clone, PartialEq)]
+pub enum FrameType {
+    Other = ll::TAGLIB_FRAME_TYPE_OTHER as isize,
+    FileIcon = ll::TAGLIB_FRAME_TYPE_FILE_ICON as isize,
+    OtherFileIcon = ll::TAGLIB_FRAME_TYPE_OTHER_FILE_ICON as isize,
+    FrontCover = ll::TAGLIB_FRAME_TYPE_FRONT_COVER as isize,
+    BackCover = ll::TAGLIB_FRAME_TYPE_BACK_COVER as isize,
+    LeafletPage = ll::TAGLIB_FRAME_TYPE_LEAFLET_PAGE as isize,
+    Media = ll::TAGLIB_FRAME_TYPE_MEDIA as isize,
+    LeadArtist = ll::TAGLIB_FRAME_TYPE_LEAD_ARTIST as isize,
+    Artist = ll::TAGLIB_FRAME_TYPE_ARTIST as isize,
+    Conductor = ll::TAGLIB_FRAME_TYPE_CONDUCTOR as isize,
+    Band = ll::TAGLIB_FRAME_TYPE_BAND as isize,
+    Composer = ll::TAGLIB_FRAME_TYPE_COMPOSER as isize,
+    Lyricist = ll::TAGLIB_FRAME_TYPE_LYRICIST as isize,
+    RecordingLocation = ll::TAGLIB_FRAME_TYPE_RECORDING_LOCATION as isize,
+    DuringRecording = ll::TAGLIB_FRAME_TYPE_DURING_RECORDING as isize,
+    DuringPerformance = ll::TAGLIB_FRAME_TYPE_DURING_PERFORMANCE as isize,
+    MovieScreenCapture = ll::TAGLIB_FRAME_TYPE_MOVIE_SCREEN_CAPTURE as isize,
+    ColouredFish = ll::TAGLIB_FRAME_TYPE_COLOURED_FISH as isize,
+    Illustration = ll::TAGLIB_FRAME_TYPE_ILLUSTRATION as isize,
+    BandLogo = ll::TAGLIB_FRAME_TYPE_BAND_LOGO as isize,
+    PublisherLogo = ll::TAGLIB_FRAME_TYPE_PUBLISHER_LOGO as isize,
+}
+
 impl Drop for File {
     fn drop(&mut self) {
         unsafe {
@@ -284,6 +323,20 @@ impl File {
         }
     }
 
+    /// Returns the `taglib::TagId3v2` instance for the given file.
+    /// It is only valid for MPEG files.
+    pub fn tag_id3v2(&mut self, create: bool) -> Result<TagId3v2, FileError> {
+        let res = unsafe { ll::taglib_file_tag_id3v2(self.raw, create) };
+        if res.is_null() {
+            Err(FileError::NoAvailableTag)
+        } else {
+            Ok(TagId3v2 {
+                raw: res,
+                file: self,
+            })
+        }
+    }
+
     /// Returns whether the file is valid.
     pub fn is_valid(&self) -> bool {
         unsafe { ll::taglib_file_is_valid(self.raw) != 0 }
@@ -320,6 +373,7 @@ mod test {
     use super::*;
     use std::fs;
     use std::path::PathBuf;
+    use std::io::Read;
 
     #[test]
     fn test_get_tag() {
@@ -371,6 +425,23 @@ mod test {
         let tag = file.tag().unwrap();
         assert_eq!(tag.artist().unwrap(), "Not Artist");
 
+        fs::remove_file(temp_fn).unwrap();
+    }
+
+    #[test]
+    fn test_set_cover() {
+        let temp_fn = "fixtures/temp.mp3";
+        fs::copy(TEST_MP3, temp_fn).unwrap();
+        let mut file = File::new_type(temp_fn, FileType::MPEG).unwrap();
+        let mut tag = file.tag_id3v2(true).unwrap();
+
+        let mut f = std::fs::File::open("fixtures/logo.png").unwrap();
+        let mut buffer = Vec::new();
+        f.read_to_end(&mut buffer).unwrap();
+
+        let res = tag.add_picture(FrameType::FrontCover, buffer.as_slice());
+        assert!(res);
+        file.save();
         fs::remove_file(temp_fn).unwrap();
     }
 }
