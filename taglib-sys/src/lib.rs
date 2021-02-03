@@ -31,6 +31,8 @@ pub type TagLib_AudioProperties = c_void;
 
 pub type TagLib_Bool = c_int;
 pub type TagLib_FileType = c_uint;
+pub type TagLib_FrameType = c_uint;
+
 
 pub const TAGLIB_FILE_MPEG: TagLib_FileType = 0;
 pub const TAGLIB_FILE_OGG_VORBIS: TagLib_FileType = 1;
@@ -42,6 +44,28 @@ pub const TAGLIB_FILE_SPEEX: TagLib_FileType = 6;
 pub const TAGLIB_FILE_TRUE_AUDIO: TagLib_FileType = 7;
 pub const TAGLIB_FILE_MP4: TagLib_FileType = 8;
 pub const TAGLIB_FILE_ASF: TagLib_FileType = 9;
+
+pub const TAGLIB_FRAME_TYPE_OTHER: TagLib_FrameType = 0x00;
+pub const TAGLIB_FRAME_TYPE_FILE_ICON: TagLib_FrameType = 0x01;
+pub const TAGLIB_FRAME_TYPE_OTHER_FILE_ICON: TagLib_FrameType = 0x02;
+pub const TAGLIB_FRAME_TYPE_FRONT_COVER: TagLib_FrameType = 0x03;
+pub const TAGLIB_FRAME_TYPE_BACK_COVER: TagLib_FrameType = 0x04;
+pub const TAGLIB_FRAME_TYPE_LEAFLET_PAGE: TagLib_FrameType = 0x05;
+pub const TAGLIB_FRAME_TYPE_MEDIA: TagLib_FrameType = 0x06;
+pub const TAGLIB_FRAME_TYPE_LEAD_ARTIST: TagLib_FrameType = 0x07;
+pub const TAGLIB_FRAME_TYPE_ARTIST: TagLib_FrameType = 0x08;
+pub const TAGLIB_FRAME_TYPE_CONDUCTOR: TagLib_FrameType = 0x09;
+pub const TAGLIB_FRAME_TYPE_BAND: TagLib_FrameType = 0x0A;
+pub const TAGLIB_FRAME_TYPE_COMPOSER: TagLib_FrameType = 0x0B;
+pub const TAGLIB_FRAME_TYPE_LYRICIST: TagLib_FrameType = 0x0C;
+pub const TAGLIB_FRAME_TYPE_RECORDING_LOCATION: TagLib_FrameType = 0x0D;
+pub const TAGLIB_FRAME_TYPE_DURING_RECORDING: TagLib_FrameType = 0x0E;
+pub const TAGLIB_FRAME_TYPE_DURING_PERFORMANCE: TagLib_FrameType = 0x0F;
+pub const TAGLIB_FRAME_TYPE_MOVIE_SCREEN_CAPTURE: TagLib_FrameType = 0x10;
+pub const TAGLIB_FRAME_TYPE_COLOURED_FISH: TagLib_FrameType = 0x11;
+pub const TAGLIB_FRAME_TYPE_ILLUSTRATION: TagLib_FrameType = 0x12;
+pub const TAGLIB_FRAME_TYPE_BAND_LOGO: TagLib_FrameType = 0x13;
+pub const TAGLIB_FRAME_TYPE_PUBLISHER_LOGO: TagLib_FrameType = 0x14;
 
 // tag_c.h
 extern "C" {
@@ -78,4 +102,8 @@ extern "C" {
     pub fn taglib_audioproperties_channels(properties: *const TagLib_AudioProperties) -> c_int;
 
     pub fn taglib_file_tag_id3v2(file: *mut TagLib_File, create: bool) -> *mut TagLib_TagId3v2;
+    pub fn taglib_id3v2_add_picture(tag: *mut TagLib_TagId3v2,
+                                    frame_type: c_uint,
+                                    buffer: *const u8,
+                                    buffer_size: usize) -> bool;
 }
