@@ -69,6 +69,12 @@ pub struct AudioProperties<'a> {
     file: &'a File,
 }
 
+#[allow(dead_code)]
+pub struct TagId3v2<'a> {
+    raw: *mut ll::TagLib_TagId3v2,
+    file: &'a File,
+}
+
 impl<'a> Tag<'a> {
     /// Returns the track name, if any.
     pub fn title(&self) -> Option<String> {
@@ -284,6 +290,20 @@ impl File {
         }
     }
 
+    /// Returns the `taglib::TagId3v2` instance for the given file.
+    /// It is only valid for MPEG files.
+    pub fn tag_id3v2(&mut self, create: bool) -> Result<TagId3v2, FileError> {
+        let res = unsafe { ll::taglib_file_tag_id3v2(self.raw, create) };
+        if res.is_null() {
+            Err(FileError::NoAvailableTag)
+        } else {
+            Ok(TagId3v2 {
+                raw: res,
+                file: self,
+            })
+        }
+    }
+
     /// Returns whether the file is valid.
     pub fn is_valid(&self) -> bool {
         unsafe { ll::taglib_file_is_valid(self.raw) != 0 }
@@ -372,5 +392,23 @@ mod test {
         assert_eq!(tag.artist().unwrap(), "Not Artist");
 
         fs::remove_file(temp_fn).unwrap();
+    }
+
+    #[test]
+    fn test_set_cover() {
+        let temp_fn = "fixtures/temp.mp3";
+        fs::copy(TEST_MP3, temp_fn).unwrap();
+        let mut file = File::new_type(temp_fn, FileType::MPEG).unwrap();
+        let mut tag = file.tag_id3v2(true).unwrap();
+        // tag.set_artist("Not Artist");
+        // assert_eq!(tag.artist().unwrap(), "Not Artist");
+
+        file.save();
+
+        // let file = File::new(temp_fn).unwrap();
+        // let tag = file.tag().unwrap();
+        // assert_eq!(tag.artist().unwrap(), "Not Artist");
+        //
+        // fs::remove_file(temp_fn).unwrap();
     }
 }

@@ -22,3 +22,7 @@ optional = true
 [features]
 default = []
 use-pkgconfig = ["pkg-config"]
+
+[build-dependencies]
+cc = "1.0.66"
+

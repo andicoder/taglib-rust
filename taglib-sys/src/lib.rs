@@ -26,6 +26,7 @@ use libc::{c_int, c_uint, c_char, c_void};
 // Public types; these are all opaque pointer types
 pub type TagLib_File = c_void;
 pub type TagLib_Tag = c_void;
+pub type TagLib_TagId3v2 = c_void;
 pub type TagLib_AudioProperties = c_void;
 
 pub type TagLib_Bool = c_int;
@@ -75,4 +76,6 @@ extern "C" {
     pub fn taglib_audioproperties_bitrate(properties: *const TagLib_AudioProperties) -> c_int;
     pub fn taglib_audioproperties_samplerate(properties: *const TagLib_AudioProperties) -> c_int;
     pub fn taglib_audioproperties_channels(properties: *const TagLib_AudioProperties) -> c_int;
+
+    pub fn taglib_file_tag_id3v2(file: *mut TagLib_File, create: bool) -> *mut TagLib_TagId3v2;
 }
